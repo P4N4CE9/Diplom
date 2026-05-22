@@ -1,0 +1,426 @@
+@import "tailwindcss";
+
+@theme {
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+    --color-bg: #121212;
+    --color-ink: #e0e0e0;
+    --color-accent: #ff4d00;
+    --color-surface: #1e1e1e;
+    --color-surface-hover: #2a2a2a;
+    --color-border: #333333;
+    --color-muted: #888888;
+    --color-success: #00c853;
+    --color-error: #ff1744;
+}
+
+@layer base {
+    body {
+        @apply bg-bg font-sans text-ink antialiased;
+    }
+
+    h1,
+    h2,
+    h3 {
+        @apply font-bold tracking-tight;
+    }
+}
+
+/* Модалки и разметка из app.js (динамический HTML) */
+@layer components {
+    .modal {
+        @apply fixed inset-0 z-[1000] items-center justify-center bg-black/65 p-5 backdrop-blur-sm;
+        display: none;
+    }
+
+    .modal.active {
+        display: flex;
+        overflow: hidden;
+    }
+
+    .modal-content {
+        @apply max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-border bg-surface/95 p-7 shadow-2xl backdrop-blur-md;
+    }
+
+    body.modal-scroll-lock {
+        overflow: hidden;
+        overscroll-behavior: none;
+    }
+
+    .modal-narrow {
+        @apply max-w-md;
+    }
+
+    .modal-header {
+        @apply mb-5 flex items-center justify-between;
+    }
+
+    .modal-title {
+        @apply text-xl font-black uppercase tracking-tighter text-ink;
+    }
+
+    .close-btn {
+        @apply rounded-lg p-2 text-2xl leading-none text-muted transition-colors hover:bg-surface-hover hover:text-ink;
+    }
+
+    .glass-panel {
+        @apply rounded-xl border border-border bg-surface/80 backdrop-blur-md;
+    }
+
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 font-bold uppercase tracking-wide text-white transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .checkout-btn {
+        @apply w-full rounded-lg border-0 bg-success py-4 font-bold uppercase tracking-wide text-white transition-all hover:brightness-110;
+    }
+
+    .admin-btn {
+        @apply rounded-lg border-0 bg-accent px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition-all hover:brightness-110;
+    }
+
+    .admin-btn-ghost {
+        @apply border border-border bg-surface-hover text-ink hover:brightness-100;
+    }
+
+    .checkout-form {
+        @apply flex flex-col gap-4;
+    }
+
+    .form-group label {
+        @apply mb-1 block text-xs font-bold uppercase tracking-wider text-muted;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        @apply w-full rounded-lg border border-border bg-surface px-4 py-3 text-ink placeholder:text-muted focus:border-accent focus:outline-none;
+    }
+
+    .form-error {
+        @apply mt-2 text-center text-sm text-error;
+    }
+
+    .products-table {
+        @apply w-full border-collapse overflow-hidden rounded-lg border border-border text-sm;
+    }
+
+    .products-table th {
+        @apply border-b border-border bg-surface px-3 py-3 text-left text-xs font-bold uppercase tracking-wide text-muted;
+    }
+
+    .products-table td {
+        @apply border-b border-border px-3 py-3 text-ink;
+    }
+
+    .filter-btn {
+        @apply w-full rounded-lg px-4 py-2.5 text-left text-sm font-bold text-muted transition-all hover:bg-surface-hover hover:text-ink;
+    }
+
+    .filter-btn.active {
+        @apply bg-accent text-white hover:text-white;
+    }
+
+    .status-toggle {
+        @apply cursor-pointer rounded-md px-2 py-1 text-xs font-bold;
+    }
+
+    .status-in-stock {
+        @apply bg-success/20 text-success;
+    }
+
+    .status-out-of-stock {
+        @apply bg-error/15 text-error;
+    }
+
+    .order-card-admin {
+        @apply mb-3 rounded-xl border border-border bg-bg p-4 transition-all hover:border-accent/40;
+    }
+
+    .account-modal-content {
+        @apply flex max-h-[min(90vh,100dvh)] max-w-5xl flex-col overflow-hidden p-0;
+    }
+
+    .account-scroll {
+        @apply min-h-0 flex-1 overflow-y-auto overscroll-contain;
+    }
+
+    .account-hero {
+        @apply flex shrink-0 items-start justify-between gap-4 border-b border-border bg-gradient-to-br from-accent/15 via-surface to-bg px-7 py-6;
+    }
+
+    .account-hero-title {
+        @apply mt-1 text-2xl font-black uppercase tracking-tighter text-ink;
+    }
+
+    .account-hero-close {
+        @apply shrink-0;
+    }
+
+    .account-shell {
+        @apply space-y-5 p-6 pt-5 sm:p-7;
+    }
+
+    .account-grid {
+        @apply grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)];
+    }
+
+    .account-card {
+        @apply rounded-xl border border-border/80 bg-bg/60 p-5 shadow-inner shadow-black/20;
+    }
+
+    .account-profile-card {
+        @apply border-accent/20 bg-gradient-to-br from-surface/80 to-bg/90;
+    }
+
+    .account-profile-row {
+        @apply flex items-center gap-4;
+    }
+
+    .account-avatar {
+        @apply flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-accent/50 bg-accent/15 text-xl font-black uppercase text-accent shadow-lg shadow-accent/10;
+    }
+
+    .account-profile-name {
+        @apply mt-1 truncate text-xl font-black uppercase tracking-tight text-ink;
+    }
+
+    .account-email-block {
+        @apply mt-5 rounded-lg border border-border/60 bg-surface/40 px-4 py-3;
+    }
+
+    .account-email-value {
+        @apply mt-1 break-all font-mono text-sm text-ink;
+    }
+
+    .account-admin-hint {
+        @apply mt-4 rounded-lg border border-border/50 bg-surface/30 px-3 py-2 text-sm leading-relaxed text-muted;
+    }
+
+    .account-summary-card .account-stats {
+        @apply mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3;
+    }
+
+    .account-stat-tile {
+        @apply rounded-lg border border-border/70 bg-surface/50 px-4 py-3 transition-colors hover:border-accent/30 hover:bg-surface/80;
+    }
+
+    .account-stat-tile--wide {
+        @apply lg:col-span-1;
+    }
+
+    .account-stat-icon {
+        @apply mb-2 block text-lg leading-none opacity-80;
+    }
+
+    .account-stat-value {
+        @apply mt-1 text-2xl font-black tabular-nums tracking-tight text-ink;
+    }
+
+    .account-stat-value--accent {
+        @apply text-accent;
+    }
+
+    .account-stat-value--sm {
+        @apply text-sm font-bold uppercase leading-snug text-ink;
+    }
+
+    .account-meta-label {
+        @apply font-mono text-[10px] font-bold uppercase tracking-widest text-muted;
+    }
+
+    .account-orders-section {
+        @apply p-0;
+    }
+
+    .account-orders-header {
+        @apply flex flex-col gap-3 border-b border-border/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6;
+    }
+
+    .account-section-title {
+        @apply text-lg font-black uppercase tracking-tight text-ink;
+    }
+
+    .account-orders-badge {
+        @apply inline-flex w-fit items-center rounded-full border border-border bg-surface/80 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-muted;
+    }
+
+    .account-orders-body {
+        @apply p-5 sm:p-6;
+    }
+
+    .account-orders-list {
+        @apply flex flex-col gap-5;
+    }
+
+    .account-order-card {
+        @apply relative overflow-hidden rounded-xl border border-border/80 bg-gradient-to-br from-surface/60 to-bg/80 shadow-md shadow-black/25 transition-all hover:border-accent/25 hover:shadow-lg hover:shadow-black/35;
+    }
+
+    .account-order-card::before {
+        content: "";
+        @apply absolute inset-y-0 left-0 w-1 bg-accent;
+    }
+
+    .account-order-card--new::before {
+        @apply bg-[#3b82f6];
+    }
+
+    .account-order-card--processing::before {
+        @apply bg-[#f59e0b];
+    }
+
+    .account-order-card--shipped::before {
+        @apply bg-[#8b5cf6];
+    }
+
+    .account-order-card--delivered::before {
+        @apply bg-success;
+    }
+
+    .account-order-card--cancelled::before {
+        @apply bg-error;
+    }
+
+    .account-order-card--unknown::before {
+        @apply bg-muted;
+    }
+
+    .account-order-head {
+        @apply flex flex-col gap-4 border-b border-border/60 px-5 py-4 sm:flex-row sm:items-start sm:justify-between;
+    }
+
+    .account-order-title {
+        @apply text-lg font-black leading-snug tracking-tight text-ink sm:text-xl;
+    }
+
+    .account-order-aside {
+        @apply flex flex-col items-start gap-3 sm:items-end;
+    }
+
+    .account-order-total {
+        @apply text-2xl font-black tabular-nums tracking-tight text-accent;
+    }
+
+    .account-order-items-count {
+        @apply text-xs font-bold uppercase tracking-wide text-muted;
+    }
+
+    .account-order-positions {
+        @apply divide-y divide-border/50;
+    }
+
+    .account-order-position {
+        @apply flex flex-col gap-2 px-5 py-3.5 transition-colors hover:bg-surface/30 sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .account-order-position-name {
+        @apply truncate text-sm font-bold uppercase tracking-tight text-ink;
+    }
+
+    .account-order-position-sku {
+        @apply mt-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-muted;
+    }
+
+    .account-order-position-meta {
+        @apply flex items-center gap-4 text-sm;
+    }
+
+    .account-order-qty {
+        @apply inline-flex min-w-[3rem] justify-center rounded-md border border-border bg-bg/80 px-2 py-0.5 text-xs font-bold text-muted;
+    }
+
+    .account-order-position-price {
+        @apply min-w-[5.5rem] text-right font-bold tabular-nums text-ink;
+    }
+
+    .account-order-footer {
+        @apply flex flex-wrap gap-2 border-t border-border/50 bg-bg/40 px-5 py-3;
+    }
+
+    .account-order-chip {
+        @apply inline-flex items-center gap-1 rounded-md border border-border/70 bg-surface/50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-muted;
+    }
+
+    .account-actions {
+        @apply flex flex-wrap gap-3 border-t border-border/60 pt-1;
+    }
+
+    .account-btn-close {
+        @apply flex-1;
+    }
+
+    .account-btn-logout {
+        @apply rounded-lg border border-border bg-surface px-6 py-3 text-xs font-bold uppercase tracking-wide text-ink transition-colors hover:border-error/40 hover:bg-error/10 hover:text-error;
+    }
+
+    .account-empty {
+        @apply flex flex-col items-center rounded-xl border border-dashed border-border/80 bg-bg/30 px-6 py-12 text-center;
+    }
+
+    .account-empty-icon {
+        @apply mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-border bg-surface/80 text-3xl;
+    }
+
+    .account-loading {
+        @apply flex flex-col gap-4;
+    }
+
+    .account-skeleton {
+        @apply animate-pulse rounded-xl border border-border/60 bg-surface/40;
+    }
+
+    .account-skeleton-line {
+        @apply h-3 rounded bg-border/60;
+    }
+
+    .status-badge {
+        @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide;
+    }
+
+    .status-badge--new {
+        @apply border border-[#3b82f6]/40 bg-[#3b82f6]/15 text-[#60a5fa];
+    }
+
+    .status-badge--processing {
+        @apply border border-[#f59e0b]/40 bg-[#f59e0b]/15 text-[#fbbf24];
+    }
+
+    .status-badge--shipped {
+        @apply border border-[#8b5cf6]/40 bg-[#8b5cf6]/15 text-[#a78bfa];
+    }
+
+    .status-badge--delivered {
+        @apply border border-success/40 bg-success/15 text-success;
+    }
+
+    .status-badge--cancelled {
+        @apply border border-error/40 bg-error/15 text-error;
+    }
+
+    .status-badge--unknown {
+        @apply border border-border bg-surface text-muted;
+    }
+
+    .search-tab {
+        @apply border-b-2 border-transparent;
+    }
+
+    .search-tab.search-tab-active {
+        @apply border-accent text-accent;
+    }
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-bg;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-border hover:bg-muted;
+}

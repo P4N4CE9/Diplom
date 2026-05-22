@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoPro — каталог автозапчастей</title>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900|jetbrains-mono:400,500,600,700&display=swap" rel="stylesheet">
+</head>
+<body class="flex min-h-screen flex-col">
+    <script>
+        (function () {
+            function showModal(id) {
+                const modal = document.getElementById(id);
+                if (modal) modal.classList.add('active');
+            }
+
+            if (typeof window.openCart !== 'function') {
+                window.openCart = function () {
+                    showModal('cartModal');
+                    const content = document.getElementById('cartContent');
+                    if (!content) return;
+                    let cart = [];
+                    try {
+                        cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                    } catch {
+                        cart = [];
+                    }
+                    if (!cart.length) {
+                        content.innerHTML = '<p class="py-12 text-center text-muted">Корзина пуста</p>';
+                    }
+                };
+            }
+
+            if (typeof window.handleProfileClick !== 'function') {
+                window.handleProfileClick = function () {
+                    let user = null;
+                    const token = localStorage.getItem('accessToken') || localStorage.getItem('adminToken');
+                    try {
+                        user = JSON.parse(localStorage.getItem('authUser') || 'null');
+                    } catch {
+                        user = null;
+                    }
+                    if (token && user) {
+                        showModal('accountModal');
+                    } else {
+                        showModal('authModal');
+                    }
+                };
+            }
+
+            function bindHeaderButtons() {
+                const cartBtn = document.getElementById('headerCartBtn');
+                if (cartBtn && cartBtn.dataset.bound !== 'true') {
+                    cartBtn.dataset.bound = 'true';
+                    cartBtn.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        window.openCart();
+                    });
+                }
+
+                const profileBtn = document.getElementById('headerProfileBtn');
+                if (profileBtn && profileBtn.dataset.bound !== 'true') {
+                    profileBtn.dataset.bound = 'true';
+                    profileBtn.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        window.handleProfileClick();
+                    });
+                }
+
+                document.querySelectorAll('[data-action="open-profile"]').forEach((btn) => {
+                    if (btn.dataset.bound === 'true') return;
+                    btn.dataset.bound = 'true';
+                    btn.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        window.handleProfileClick();
+                        document.getElementById('mobileNav')?.classList.add('hidden');
+                    });
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', bindHeaderButtons);
+            } else {
+                bindHeaderButtons();
+            }
+        })();
+    </script>
+    <div class="border-b border-border bg-surface text-xs">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-2">
+            <span class="text-ink">+7 (800) 555-35-35</span>
+            <span class="text-muted max-md:hidden">Бесплатная доставка от 5000 ₽</span>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-50 border-b border-border bg-bg/85 backdrop-blur-xl">
+        <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
+            <a href="#" class="group flex cursor-pointer items-center gap-2.5 no-underline text-inherit" onclick="event.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' });">
+                <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-white transition-transform group-hover:rotate-12">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                </span>
+                <span class="flex flex-col leading-none">
+                    <span class="text-xl font-black uppercase tracking-tighter text-ink">AutoPro</span>
+                    <span class="mt-1 font-mono text-[10px] font-bold uppercase tracking-widest text-muted">Precision Parts</span>
+                </span>
+            </a>
+
+            <nav class="hidden items-center gap-8 lg:flex" aria-label="Основное меню">
+                <button type="button" class="border-0 bg-transparent text-xs font-bold uppercase tracking-widest text-ink hover:text-accent" onclick="document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">Каталог</button>
+                <a class="text-xs font-bold uppercase tracking-widest text-ink no-underline hover:text-accent" href="#footer">Поддержка</a>
+                <span class="text-xs font-bold uppercase tracking-widest text-muted">Pro</span>
+            </nav>
+
+            <div class="flex items-center gap-1">
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-surface" aria-label="Поиск" onclick="document.getElementById('searchInput').focus()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </button>
+                <button type="button" id="headerCartBtn" class="relative flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-surface" aria-label="Корзина">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    <span class="cart-count absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-black text-white">0</span>
+                </button>
+                <button type="button" id="headerProfileBtn" class="flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-surface" aria-label="Вход или регистрация" title="Вход или регистрация">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-surface lg:hidden" aria-label="Меню" onclick="document.getElementById('mobileNav').classList.toggle('hidden')">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobileNav" class="hidden flex-col gap-1 border-t border-border px-6 pb-4 lg:hidden">
+            <button type="button" class="border-0 border-b border-border bg-transparent py-3 text-left text-xs font-bold uppercase tracking-widest text-ink hover:text-accent" onclick="document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' }); document.getElementById('mobileNav').classList.add('hidden')">Каталог</button>
+            <a class="block py-3 text-xs font-bold uppercase tracking-widest text-ink no-underline hover:text-accent" href="#footer" onclick="document.getElementById('mobileNav').classList.add('hidden')">Поддержка</a>
+            <button type="button" data-action="open-profile" class="border-0 border-b border-border bg-transparent py-3 text-left text-xs font-bold uppercase tracking-widest text-ink hover:text-accent">Вход / аккаунт</button>
+        </div>
+    </header>
+
+    <main class="flex-1">
+        <section class="relative overflow-hidden px-6 pb-20 pt-14 md:pt-24">
+            <div class="pointer-events-none absolute right-0 top-0 h-[min(600px,90vw)] w-[min(600px,90vw)] -translate-y-1/2 translate-x-1/3 rounded-full bg-accent/10 blur-[120px]" aria-hidden="true"></div>
+            <div class="relative z-[1] mx-auto max-w-7xl">
+                <div class="max-w-3xl">
+                    <h1 class="text-4xl font-black uppercase leading-[0.95] tracking-tighter text-ink md:text-6xl lg:text-7xl">
+                        Точные <span class="text-accent">запчасти</span> для тех, кто <span class="font-serif text-3xl font-light lowercase not-italic text-muted md:text-5xl lg:text-6xl">не останавливается.</span>
+                    </h1>
+                    <p class="mt-8 max-w-xl text-lg leading-relaxed text-muted">Профессиональный каталог: проверенные бренды, актуальные остатки и быстрое оформление заказа.</p>
+                </div>
+
+                <div class="glass-panel mt-10 max-w-4xl p-6 shadow-2xl shadow-black/50 md:p-8">
+                    <div class="mb-6 flex flex-wrap gap-6 border-b border-border pb-4" role="tablist">
+                        <button type="button" class="search-tab search-tab-active relative border-0 bg-transparent pb-2 text-[11px] font-bold uppercase tracking-widest text-accent" data-tab="text">Артикул / название</button>
+                        <button type="button" class="search-tab relative border-0 bg-transparent pb-2 text-[11px] font-bold uppercase tracking-widest text-muted hover:text-accent" data-tab="cat" onclick="document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">Категории</button>
+                    </div>
+                    <div class="flex flex-col gap-4 md:flex-row md:items-stretch">
+                        <div class="relative flex-1">
+                            <svg class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="searchInput" class="h-14 w-full rounded-lg border border-border bg-surface py-3 pl-12 pr-4 font-mono text-sm uppercase tracking-widest text-ink placeholder:normal-case placeholder:tracking-normal placeholder:text-muted focus:border-accent focus:outline-none md:text-base" placeholder="Поиск по названию, бренду, артикулу или категории…" autocomplete="off">
+                        </div>
+                        <button type="button" class="btn-primary h-14 shrink-0 px-10" onclick="document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">
+                            Найти запчасти
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                    <p class="mt-4 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest text-muted">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Остатки и цены синхронизируются с вашим магазином в реальном времени
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="border-y border-border bg-surface px-6 py-12 md:py-16">
+            <div class="mx-auto grid max-w-7xl gap-10 md:grid-cols-3 md:gap-12">
+                <div class="flex gap-5">
+                    <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-border bg-bg text-accent">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17h4V5h-4v12Zm-6 2h4V9H4v10Zm12 0h4V7h-4v12Z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold uppercase tracking-tight text-ink">Быстрая отгрузка</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-muted">Учёт по складам и актуальное наличие в каталоге.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5">
+                    <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-border bg-bg text-accent">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold uppercase tracking-tight text-ink">Проверенный каталог</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-muted">Категории, артикулы и описания из вашей базы.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5">
+                    <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-border bg-bg text-accent">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold uppercase tracking-tight text-ink">Возвраты</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-muted">Оформление и учёт заказов через единую систему.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="px-6 py-16 md:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                        <p class="mb-3 text-[11px] font-bold uppercase tracking-[0.25em] text-accent">Каталог</p>
+                        <h2 class="text-3xl font-black uppercase tracking-tighter text-ink md:text-4xl">Популярные категории</h2>
+                    </div>
+                    <button type="button" class="inline-flex items-center gap-2 border-0 bg-transparent text-xs font-bold uppercase tracking-widest text-ink hover:text-accent" onclick="filterProducts('all'); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">
+                        Все товары
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-6">
+                    <button type="button" class="category-card group border-0 bg-transparent p-0 text-center text-inherit" data-filter="brakes" onclick="filterProducts('brakes'); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">
+                        <div class="relative mb-3.5 aspect-square overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/10 to-transparent transition-all group-hover:-translate-y-1 group-hover:border-accent/40">
+                            <img data-category-image="brakes" alt="Тормоза" class="hidden absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-bg/70 via-bg/10 to-transparent"></div>
+                            <span class="absolute bottom-3.5 left-3.5 font-mono text-[11px] font-bold uppercase tracking-widest text-accent">01</span>
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-ink group-hover:text-accent">Тормоза</span>
+                    </button>
+                    <button type="button" class="category-card group border-0 bg-transparent p-0 text-center text-inherit" data-filter="suspension" onclick="filterProducts('suspension'); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">
+                        <div class="relative mb-3.5 aspect-square overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/10 to-transparent transition-all group-hover:-translate-y-1 group-hover:border-accent/40">
+                            <img data-category-image="suspension" alt="Подвеска" class="hidden absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-bg/70 via-bg/10 to-transparent"></div>
+                            <span class="absolute bottom-3.5 left-3.5 font-mono text-[11px] font-bold uppercase tracking-widest text-accent">02</span>
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-ink group-hover:text-accent">Подвеска</span>
+                    </button>
+                    <button type="button" class="category-card group border-0 bg-transparent p-0 text-center text-inherit" data-filter="engine" onclick="filterProducts('engine'); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">
+                        <div class="relative mb-3.5 aspect-square overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/10 to-transparent transition-all group-hover:-translate-y-1 group-hover:border-accent/40">
+                            <img data-category-image="engine" alt="Двигатель" class="hidden absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-bg/70 via-bg/10 to-transparent"></div>
+                            <span class="absolute bottom-3.5 left-3.5 font-mono text-[11px] font-bold uppercase tracking-widest text-accent">03</span>
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-ink group-hover:text-accent">Двигатель</span>
+                    </button>
+                    <button type="button" class="category-card group border-0 bg-transparent p-0 text-center text-inherit" data-filter="electrical" onclick="filterProducts('electrical'); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">
+                        <div class="relative mb-3.5 aspect-square overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/10 to-transparent transition-all group-hover:-translate-y-1 group-hover:border-accent/40">
+                            <img data-category-image="electrical" alt="Электрика" class="hidden absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-bg/70 via-bg/10 to-transparent"></div>
+                            <span class="absolute bottom-3.5 left-3.5 font-mono text-[11px] font-bold uppercase tracking-widest text-accent">04</span>
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-ink group-hover:text-accent">Электрика</span>
+                    </button>
+                    <button type="button" class="category-card group border-0 bg-transparent p-0 text-center text-inherit" data-filter="filters" onclick="filterProducts('filters'); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">
+                        <div class="relative mb-3.5 aspect-square overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/10 to-transparent transition-all group-hover:-translate-y-1 group-hover:border-accent/40">
+                            <img data-category-image="filters" alt="Масла и фильтры" class="hidden absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-bg/70 via-bg/10 to-transparent"></div>
+                            <span class="absolute bottom-3.5 left-3.5 font-mono text-[11px] font-bold uppercase tracking-widest text-accent">05</span>
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-ink group-hover:text-accent">Масла и фильтры</span>
+                    </button>
+                    <button type="button" class="category-card group border-0 bg-transparent p-0 text-center text-inherit" data-filter="lighting" onclick="filterProducts('lighting'); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">
+                        <div class="relative mb-3.5 aspect-square overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/10 to-transparent transition-all group-hover:-translate-y-1 group-hover:border-accent/40">
+                            <img data-category-image="lighting" alt="Освещение" class="hidden absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-bg/70 via-bg/10 to-transparent"></div>
+                            <span class="absolute bottom-3.5 left-3.5 font-mono text-[11px] font-bold uppercase tracking-widest text-accent">06</span>
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-ink group-hover:text-accent">Освещение</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="catalog" class="px-6 pb-20">
+            <div class="mx-auto max-w-7xl">
+                <div class="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <div class="mb-3 font-mono text-[11px] font-bold uppercase tracking-widest text-muted">
+                            <span>Главная</span><span class="mx-2 opacity-50">/</span><span class="text-accent">Каталог</span>
+                        </div>
+                        <h2 class="text-4xl font-black uppercase tracking-tighter text-ink md:text-5xl">Запчасти</h2>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
+                    <aside class="glass-panel w-full shrink-0 p-6 lg:sticky lg:top-24 lg:w-64">
+                        <h3 class="mb-5 flex items-center justify-between text-[11px] font-bold uppercase tracking-widest text-muted">Категории</h3>
+                        <div class="flex flex-col gap-2">
+                            <button type="button" class="filter-btn active" data-filter="all" onclick="filterProducts('all')">Все товары</button>
+                            <button type="button" class="filter-btn" data-filter="brakes" onclick="filterProducts('brakes')">Тормоза</button>
+                            <button type="button" class="filter-btn" data-filter="engine" onclick="filterProducts('engine')">Двигатель</button>
+                            <button type="button" class="filter-btn" data-filter="suspension" onclick="filterProducts('suspension')">Подвеска</button>
+                            <button type="button" class="filter-btn" data-filter="electrical" onclick="filterProducts('electrical')">Аккумуляторы</button>
+                            <button type="button" class="filter-btn" data-filter="filters" onclick="filterProducts('filters')">Масла</button>
+                            <button type="button" class="filter-btn" data-filter="lighting" onclick="filterProducts('lighting')">Освещение</button>
+                        </div>
+                    </aside>
+
+                    <div class="min-w-0 flex-1">
+                        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+                            <p id="catalogCount" class="font-mono text-[11px] font-bold uppercase tracking-widest text-muted">Загрузка…</p>
+                            <span class="font-mono text-[11px] font-bold uppercase tracking-widest text-muted">Сортировка: по каталогу</span>
+                        </div>
+                        <div id="productGrid" class="grid grid-cols-1 gap-7 sm:grid-cols-2 xl:grid-cols-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="adminPanel" class="mx-auto mb-10 hidden max-w-7xl rounded-xl border border-border bg-surface px-6 py-7">
+        <h3 class="mb-4 text-xl font-black uppercase tracking-tighter text-ink">Панель администратора</h3>
+        <div class="mb-6 flex flex-wrap gap-2">
+            <button type="button" class="admin-btn" onclick="manageProducts()">Товары</button>
+            <button type="button" class="admin-btn" onclick="viewOrders()">Заказы</button>
+            <button type="button" class="admin-btn" onclick="manageStock()">Остатки</button>
+            <button type="button" class="admin-btn admin-btn-ghost" onclick="logoutUser()">Выйти</button>
+        </div>
+        <div id="adminContent"></div>
+    </div>
+
+    <footer id="footer" class="border-t border-border bg-surface px-6 py-14">
+        <div class="mx-auto grid max-w-7xl gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
+            <div>
+                <div class="mb-4 flex items-center gap-2">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-white">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2"/></svg>
+                    </span>
+                    <span class="text-lg font-black uppercase tracking-tighter">AutoPro</span>
+                </div>
+                <p class="text-sm leading-relaxed text-muted">Каталог автозапчастей: корзина, заказы и админка.</p>
+            </div>
+            <div>
+                <h3 class="mb-5 text-[11px] font-bold uppercase tracking-widest text-muted">Каталог</h3>
+                <ul class="space-y-3 text-sm font-semibold">
+                    <li><button type="button" class="border-0 bg-transparent p-0 text-ink hover:text-accent" onclick="filterProducts('brakes'); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">Тормоза</button></li>
+                    <li><button type="button" class="border-0 bg-transparent p-0 text-ink hover:text-accent" onclick="filterProducts('suspension'); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">Подвеска</button></li>
+                    <li><button type="button" class="border-0 bg-transparent p-0 text-ink hover:text-accent" onclick="filterProducts('engine'); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })">Двигатель</button></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="mb-5 text-[11px] font-bold uppercase tracking-widest text-muted">Поддержка</h3>
+                <ul class="space-y-3 text-sm text-muted">
+                    <li>Доставка и оплата</li>
+                    <li>Возврат</li>
+                    <li><a class="text-ink hover:text-accent" href="mailto:info@avtodetal.ru">info@avtodetal.ru</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="mb-5 text-[11px] font-bold uppercase tracking-widest text-muted">Рассылка</h3>
+                <p class="text-sm text-muted">Новости каталога.</p>
+                <div class="mt-3 flex gap-2">
+                    <input type="email" class="min-w-0 flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink focus:border-accent focus:outline-none" placeholder="Email">
+                    <button type="button" class="btn-primary shrink-0 px-4 py-2" aria-label="Подписаться">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="mx-auto mt-12 flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-border pt-8 text-center md:flex-row md:text-left">
+            <p class="font-mono text-[10px] uppercase tracking-widest text-muted">© 2026 AutoPro Precision</p>
+            <div class="flex gap-6 font-mono text-[10px] uppercase tracking-widest text-muted">
+                <button type="button" class="border-0 bg-transparent hover:text-ink">Конфиденциальность</button>
+                <button type="button" class="border-0 bg-transparent hover:text-ink">Условия</button>
+            </div>
+        </div>
+    </footer>
+
+    <div id="cartModal" class="modal">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h2 class="modal-title">Корзина</h2>
+                <button type="button" class="close-btn" onclick="closeCart()" aria-label="Закрыть">×</button>
+            </div>
+            <div id="cartContent"></div>
+        </div>
+    </div>
+
+    <div id="checkoutModal" class="modal">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h2 class="modal-title">Оформление заказа</h2>
+                <button type="button" class="close-btn" onclick="closeCheckout()" aria-label="Закрыть">×</button>
+            </div>
+            <div id="checkoutContent"></div>
+        </div>
+    </div>
+
+    <div id="accountModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
+        <div class="modal-content account-modal-content glass-panel">
+            <div class="account-hero">
+                <div class="account-hero-text">
+                    <p class="account-meta-label">Личный кабинет</p>
+                    <h2 id="accountModalTitle" class="account-hero-title">Мои заказы</h2>
+                </div>
+                <button type="button" class="close-btn account-hero-close" onclick="closeAccountModal()" aria-label="Закрыть">×</button>
+            </div>
+            <div class="account-scroll">
+            <div class="account-shell">
+                <div class="account-grid">
+                    <section class="account-card account-profile-card">
+                        <div class="account-profile-row">
+                            <div id="accountAvatar" class="account-avatar" aria-hidden="true">?</div>
+                            <div class="min-w-0 flex-1">
+                                <p class="account-meta-label">Профиль</p>
+                                <h3 id="accountNameDisplay" class="account-profile-name">Покупатель</h3>
+                            </div>
+                        </div>
+                        <div class="account-email-block">
+                            <p class="account-meta-label">Email</p>
+                            <p id="accountEmailDisplay" class="account-email-value"></p>
+                        </div>
+                        <p id="accountAdminHint" class="account-admin-hint hidden">Ниже на странице доступна панель управления товарами и заказами.</p>
+                    </section>
+                    <section class="account-card account-summary-card">
+                        <p class="account-meta-label">Сводка покупок</p>
+                        <div class="account-stats">
+                            <div class="account-stat-tile">
+                                <span class="account-stat-icon" aria-hidden="true">📦</span>
+                                <p class="account-meta-label">Заказов</p>
+                                <p id="accountStatsOrders" class="account-stat-value">0</p>
+                            </div>
+                            <div class="account-stat-tile">
+                                <span class="account-stat-icon" aria-hidden="true">💳</span>
+                                <p class="account-meta-label">Потрачено</p>
+                                <p id="accountStatsSpent" class="account-stat-value account-stat-value--accent">0 ₽</p>
+                            </div>
+                            <div class="account-stat-tile account-stat-tile--wide">
+                                <span class="account-stat-icon" aria-hidden="true">🕐</span>
+                                <p class="account-meta-label">Последний заказ</p>
+                                <p id="accountStatsLast" class="account-stat-value account-stat-value--sm">Пока нет</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <section class="account-card account-orders-section">
+                    <div class="account-orders-header">
+                        <div>
+                            <p class="account-meta-label">История заказов</p>
+                            <h3 class="account-section-title">Ваши покупки</h3>
+                        </div>
+                        <span id="accountOrdersSummary" class="account-orders-badge">Загрузка...</span>
+                    </div>
+                    <div id="accountOrdersContent" class="account-orders-body"></div>
+                </section>
+
+                <div class="account-actions">
+                    <button type="button" class="btn-primary account-btn-close" onclick="closeAccountModal()">Закрыть</button>
+                    <button type="button" class="account-btn-logout" onclick="logoutUser()">Выйти</button>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="authModal" class="modal" role="dialog" aria-modal="true">
+        <div class="modal-content modal-narrow glass-panel max-w-md">
+            <div class="modal-header">
+                <h2 class="modal-title">Аккаунт</h2>
+                <button type="button" class="close-btn" onclick="closeAuthModal()" aria-label="Закрыть">×</button>
+            </div>
+            <div class="mb-6 flex gap-6 border-b border-border pb-3">
+                <button type="button" data-auth-tab="login" class="search-tab search-tab-active border-0 bg-transparent pb-2 text-[11px] font-bold uppercase tracking-widest" onclick="switchAuthTab('login')">Вход</button>
+                <button type="button" data-auth-tab="register" class="search-tab border-0 bg-transparent pb-2 text-[11px] font-bold uppercase tracking-widest text-muted" onclick="switchAuthTab('register')">Регистрация</button>
+            </div>
+            <div data-auth-panel="login" class="checkout-form">
+                <div class="form-group">
+                    <label for="authEmail">Email</label>
+                    <input type="email" id="authEmail" autocomplete="email" placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="authPassword">Пароль</label>
+                    <input type="password" id="authPassword" autocomplete="current-password" placeholder="••••••••">
+                </div>
+                <button type="button" class="btn-primary w-full" onclick="loginFromModal()">Войти</button>
+            </div>
+            <div data-auth-panel="register" class="checkout-form hidden">
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" autocomplete="email" placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Пароль (от 8 символов)</label>
+                    <input type="password" id="regPassword" autocomplete="new-password" placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label for="regFullName">Имя</label>
+                    <input type="text" id="regFullName" autocomplete="name" placeholder="Иван Иванов">
+                </div>
+                <button type="button" class="btn-primary w-full" onclick="registerFromModal()">Зарегистрироваться</button>
+            </div>
+            <p id="authError" class="form-error mt-4"></p>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
