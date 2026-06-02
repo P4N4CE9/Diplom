@@ -34,6 +34,7 @@ def main() -> None:
         run([python, "-m", "pip", "install", "-r", str(req)], BACKEND)
 
     print("\n[OK] Готово. Запуск: cd backend && python run.py")
+    print("    (фронт: Vite CSS + app.bundle.js; нужен Node.js: npm install в frontend/)")
 
 
 if __name__ == "__main__":
